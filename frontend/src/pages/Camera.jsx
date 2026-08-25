@@ -33,16 +33,22 @@ function Camera(){
 
 
 
-
-
-
-
-
-
 return (
-    <div className="min-h-screen bg-black flex items-center justify-center">
-        <video ref={videoRef} className="w-full max-w-2xl rounded-xl shadow-2xl"/>
+    <div className="w-screen h-screen bg-black flex flex-col items-center justify-start pt-6 md:pt-10 gap-4 md:gap-6">
+        <div className="flex flex-col items-center gap-2 px-4">
+            <h1 className="text-3xl md:text-6xl font-bold text-white drop-shadow-[0_0_20px_white] text-center">
+                rep-mentor
+            </h1>
+            <p className="text-gray-400 text-sm md:text-lg tracking-widest uppercase text-center">
+                your real-time form coach
+            </p>
+        </div>
+        <video 
+            ref={videoRef} 
+            className="h-[65vh] w-auto md:w-full md:h-auto max-w-5xl rounded-xl"
+        />
     </div>
 )
+
 }
 export default Camera
