@@ -3,58 +3,107 @@ import { useRef } from "react"
 import { useLocation } from 'react-router-dom'
 
 function Camera(){
-    //logic before return statement
-    const videoRef = useRef()  //ref (connection) to the video tag
+    const videoRef = useRef()
+    const canvasRef = useRef()
 
     const location = useLocation()
-    const exercise = location.state?.exercise // grabbing the exercise name that was selected
+    const exercise = location.state?.exercise
 
-    useEffect(()=> { // block of code that useEffect will run after page load
-    const startCamera = async () => {
-        try {
-            const stream = await navigator.mediaDevices.getUserMedia({ video: true }) //asking for webcam feed
-            videoRef.current.srcObject = stream
-            videoRef.current.play()
-        } catch (err) {
-            console.error("Camera access error", err)
+    useEffect(()=> {
+        const startCamera = async () => {
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ video: true })
+                videoRef.current.srcObject = stream
+                videoRef.current.play()
+            } catch (err) {
+                console.error("Camera access error", err)
+            }
         }
-    }
 
-    startCamera()
+        startCamera()
 
-    return () => {
-        //runs when user leaves the page and turns camera off
-        if (videoRef.current && videoRef.current.srcObject) {
-            videoRef.current.srcObject.getTracks().forEach(track => track.stop())
+        return () => {
+            if (videoRef.current && videoRef.current.srcObject) {
+                videoRef.current.srcObject.getTracks().forEach(track => track.stop())
+            }
         }
-    }
     }, [])
 
+    useEffect(() => {
+        let animationId
 
+        const initMediaPipe = async () => {
+            const { PoseLandmarker, FilesetResolver, DrawingUtils } = await import('@mediapipe/tasks-vision')
 
+            const vision = await FilesetResolver.forVisionTasks(
+                'https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision/wasm'
+            )
 
+            const poseLandmarker = await PoseLandmarker.createFromOptions(vision, {
+                baseOptions: {
+                    modelAssetPath: 'https://storage.googleapis.com/mediapipe-models/pose_landmarker/pose_landmarker_lite/float16/1/pose_landmarker_lite.task',
+                    delegate: 'GPU'
+                },
+                runningMode: 'VIDEO',
+                numPoses: 1
+            })
 
+            const canvas = canvasRef.current
+            const video = videoRef.current
+            const ctx = canvas.getContext('2d')
+            const drawingUtils = new DrawingUtils(ctx)
 
-return (
-    <div className="w-screen h-screen bg-black flex flex-col items-center justify-start pt-6 md:pt-10 gap-4 md:gap-6">
-        <div className="flex flex-col items-center gap-2 px-4">
-            <h1 className="text-3xl md:text-6xl font-bold text-white drop-shadow-[0_0_20px_white] text-center">
-                rep-mentor
-            </h1>
-            <p className="text-gray-400 text-sm md:text-md tracking-widest uppercase text-center">
-                your real-time form coach
-            </p>
-            
-             <p className="text-white pt-5 text-sm md:text-[15px] tracking-widest uppercase text-center">
-                {exercise}
-            </p>
+            const detect = () => {
+                if (video.readyState >= 2) {
+                    canvas.width = video.videoWidth
+                    canvas.height = video.videoHeight
+
+                    const results = poseLandmarker.detectForVideo(video, performance.now())
+                    ctx.clearRect(0, 0, canvas.width, canvas.height)
+
+                    if (results.landmarks.length > 0) {
+                        drawingUtils.drawLandmarks(results.landmarks[0])
+                        drawingUtils.drawConnectors(results.landmarks[0], PoseLandmarker.POSE_CONNECTIONS)
+                    }
+                }
+                animationId = requestAnimationFrame(detect)
+            }
+
+            detect()
+        }
+
+        initMediaPipe()
+
+        return () => {
+            if (animationId) cancelAnimationFrame(animationId)
+        }
+    }, [])
+
+    return (
+        <div className="w-screen h-screen bg-black flex flex-col items-center justify-start pt-6 md:pt-10 gap-4 md:gap-6">
+            <div className="flex flex-col items-center gap-2 px-4">
+                <h1 className="text-3xl md:text-6xl font-bold text-white drop-shadow-[0_0_20px_white] text-center">
+                    rep-mentor
+                </h1>
+                <p className="text-gray-400 text-sm md:text-md tracking-widest uppercase text-center">
+                    your real-time form coach
+                </p>
+                <p className="text-white pt-5 text-sm md:text-[15px] tracking-widest uppercase text-center">
+                    {exercise}
+                </p>
+            </div>
+            <div className="relative w-full max-w-6xl">
+                <video 
+                    ref={videoRef} 
+                    className="w-full pt-1 rounded-xl h-[600px] md:h-[700px] object-cover"
+                />
+                <canvas
+                    ref={canvasRef}
+                    className="absolute top-0 left-0 w-full h-full rounded-xl"
+                />
+            </div>
         </div>
-     <video 
-        ref={videoRef} 
-        className="w-full pt-1 max-w-6xl rounded-xl h-[600px] md:h-[700px] object-cover"
-    />
-    </div>
-)
-
+    )
 }
+
 export default Camera
