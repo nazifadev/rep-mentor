@@ -79,6 +79,14 @@ function Camera(){
         }
     }, [])
 
+    //takes 3 body landmark points and returns the angle between them in degrees
+    const calculateAngle = (a, b, c) => {
+    const radians = Math.atan2(c.y - b.y, c.x - b.x) - Math.atan2(a.y - b.y, a.x - b.x)
+    let angle = Math.abs(radians * (180 / Math.PI))
+    if (angle > 180) angle = 360 - angle
+    return angle
+}
+
     return (
         <div className="w-screen h-screen bg-black flex flex-col items-center justify-start pt-6 md:pt-10 gap-4 md:gap-6">
             <div className="flex flex-col items-center gap-2 px-4">
