@@ -14,6 +14,7 @@ function Camera(){
     const feedbackRef = useRef("")
     const leftAngleHistoryRef = useRef([])
     const rightAngleHistoryRef = useRef([])
+    const lastSpokenRef = useRef(0)
 
     useEffect(()=> {
         const startCamera = async () => {
@@ -85,10 +86,10 @@ function Camera(){
                         leftAngleHistoryRef.current.push(leftKneeAngle)
                         rightAngleHistoryRef.current.push(rightKneeAngle)
 
-                        if (leftAngleHistoryRef.current.length > 10) leftAngleHistoryRef.current.shift()
-                        if (rightAngleHistoryRef.current.length > 10) rightAngleHistoryRef.current.shift()
+                       if (leftAngleHistoryRef.current.length > 30) leftAngleHistoryRef.current.shift()
+                       if (rightAngleHistoryRef.current.length > 30) rightAngleHistoryRef.current.shift()
                         
-                        //avraging last 10 angle readings to fix the feedback flicker bug
+                        //avraging last 40 angle readings to fix the feedback flicker bug
                         const smoothedLeft = leftAngleHistoryRef.current.reduce((a, b) => a + b, 0) / leftAngleHistoryRef.current.length
                         const smoothedRight = rightAngleHistoryRef.current.reduce((a, b) => a + b, 0) / rightAngleHistoryRef.current.length
 
@@ -108,15 +109,19 @@ function Camera(){
                             feedbackRef.current = feedback
                             setFeedbackText(feedback)
 
-                        //voice feedback
+                            //voice feedback
                            if (feedback) {
-                            window.speechSynthesis.cancel()
-                            const utterance = new SpeechSynthesisUtterance(feedback)
-                            utterance.voice = window.speechSynthesis.getVoices().find(v => v.name === "Aaron")
-                            utterance.rate = 0.9
-                            utterance.pitch = 1
-                            window.speechSynthesis.speak(utterance)
-                        }
+                                const now = Date.now()
+                                if (now - lastSpokenRef.current > 1000) {
+                                    window.speechSynthesis.cancel()
+                                    const utterance = new SpeechSynthesisUtterance(feedback)
+                                    utterance.voice = window.speechSynthesis.getVoices().find(v => v.name === "Aaron")
+                                    utterance.rate = 0.9
+                                    utterance.pitch = 1
+                                    window.speechSynthesis.speak(utterance)
+                                    lastSpokenRef.current = now
+                                }
+                            }
                         }
                     }
                 }
