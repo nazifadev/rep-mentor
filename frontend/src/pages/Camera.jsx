@@ -39,14 +39,18 @@ return (
             <h1 className="text-3xl md:text-6xl font-bold text-white drop-shadow-[0_0_20px_white] text-center">
                 rep-mentor
             </h1>
-            <p className="text-gray-400 text-sm md:text-lg tracking-widest uppercase text-center">
+            <p className="text-gray-400 text-sm md:text-md tracking-widest uppercase text-center">
                 your real-time form coach
             </p>
+            
+             <p className="text-white pt-5 text-sm md:text-[15px] tracking-widest uppercase text-center">
+                name
+            </p>
         </div>
-        <video 
-            ref={videoRef} 
-            className="h-[65vh] w-auto md:w-full md:h-auto max-w-5xl rounded-xl"
-        />
+     <video 
+        ref={videoRef} 
+        className="w-full pt-1 max-w-6xl rounded-xl h-[600px] md:h-[700px] object-cover"
+    />
     </div>
 )
 
