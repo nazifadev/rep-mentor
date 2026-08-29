@@ -107,6 +107,16 @@ function Camera(){
                         if (feedback !== feedbackRef.current) {
                             feedbackRef.current = feedback
                             setFeedbackText(feedback)
+
+                        //voice feedback
+                           if (feedback) {
+                            window.speechSynthesis.cancel()
+                            const utterance = new SpeechSynthesisUtterance(feedback)
+                            utterance.voice = window.speechSynthesis.getVoices().find(v => v.name === "Aaron")
+                            utterance.rate = 0.9
+                            utterance.pitch = 1
+                            window.speechSynthesis.speak(utterance)
+                        }
                         }
                     }
                 }
