@@ -64,6 +64,27 @@ function Camera(){
                     if (results.landmarks.length > 0) {
                         drawingUtils.drawLandmarks(results.landmarks[0])
                         drawingUtils.drawConnectors(results.landmarks[0], PoseLandmarker.POSE_CONNECTIONS)
+                        
+                    //grabbing the 3 points that form a line through the knee joint so we can calculate left + right knee angle
+                        const landmarks = results.landmarks[0]
+                        const leftHip = landmarks[23]
+                        const leftKnee = landmarks[25]
+                        const leftAnkle = landmarks[27]
+                        const rightHip = landmarks[24]
+                        const rightKnee = landmarks[26]
+                        const rightAnkle = landmarks[28]
+
+                        const leftKneeAngle = calculateAngle(leftHip, leftKnee, leftAnkle)
+                        const rightKneeAngle = calculateAngle(rightHip, rightKnee, rightAnkle)
+
+                        console.log("Left knee:", leftKneeAngle)
+                        console.log("Right knee:", rightKneeAngle)
+
+
+
+
+
+
                     }
                 }
                 animationId = requestAnimationFrame(detect)
