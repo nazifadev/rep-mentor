@@ -10,6 +10,11 @@ function Camera(){
     const location = useLocation()
     const exercise = location.state?.exercise
 
+    const [feedbackText, setFeedbackText] = useState("")
+    const feedbackRef = useRef("")
+    
+
+
     useEffect(()=> {
         const startCamera = async () => {
             try {
@@ -93,9 +98,11 @@ function Camera(){
                             feedback = "great depth, come back up"
                         }
 
-                        console.log("Feedback:", feedback)
-
-
+                        //checks if new feedback is different than what it was so the feedback does not flicker
+                        if (feedback !== feedbackRef.current) {
+                        feedbackRef.current = feedback
+                        setFeedbackText(feedback)
+                    }
 
 
 
@@ -134,6 +141,10 @@ function Camera(){
                 </p>
                 <p className="text-white pt-5 text-sm md:text-[15px] tracking-widest uppercase text-center">
                     {exercise}
+                </p>
+
+                <p className="text-white text-2xl font-bold tracking-widest uppercase text-center mt-2">
+                    {feedbackText}
                 </p>
             </div>
             <div className="relative w-full max-w-6xl">
