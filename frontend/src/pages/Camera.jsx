@@ -12,8 +12,8 @@ function Camera(){
 
     const [feedbackText, setFeedbackText] = useState("")
     const feedbackRef = useRef("")
-    
-
+    const leftAngleHistoryRef = useRef([])
+    const rightAngleHistoryRef = useRef([])
 
     useEffect(()=> {
         const startCamera = async () => {
@@ -71,7 +71,6 @@ function Camera(){
                         drawingUtils.drawLandmarks(results.landmarks[0])
                         drawingUtils.drawConnectors(results.landmarks[0], PoseLandmarker.POSE_CONNECTIONS)
                         
-                    //grabbing the 3 points that form a line through the knee joint so we can calculate left + right knee angle
                         const landmarks = results.landmarks[0]
                         const leftHip = landmarks[23]
                         const leftKnee = landmarks[25]
@@ -83,30 +82,32 @@ function Camera(){
                         const leftKneeAngle = calculateAngle(leftHip, leftKnee, leftAnkle)
                         const rightKneeAngle = calculateAngle(rightHip, rightKnee, rightAnkle)
 
-                        console.log("Left knee:", leftKneeAngle)
-                        console.log("Right knee:", rightKneeAngle)
+                        leftAngleHistoryRef.current.push(leftKneeAngle)
+                        rightAngleHistoryRef.current.push(rightKneeAngle)
 
-                       let feedback = ""
+                        if (leftAngleHistoryRef.current.length > 10) leftAngleHistoryRef.current.shift()
+                        if (rightAngleHistoryRef.current.length > 10) rightAngleHistoryRef.current.shift()
+                        
+                        //avraging last 10 angle readings to fix the feedback flicker bug
+                        const smoothedLeft = leftAngleHistoryRef.current.reduce((a, b) => a + b, 0) / leftAngleHistoryRef.current.length
+                        const smoothedRight = rightAngleHistoryRef.current.reduce((a, b) => a + b, 0) / rightAngleHistoryRef.current.length
 
-                        if (leftKneeAngle > 140 && rightKneeAngle > 140) {
+                        let feedback = ""
+                        
+                        if (leftKneeAngle > 140 || rightKneeAngle > 140) {
                             feedback = "squat deeper"
-                        } else if (leftKneeAngle <= 140 && leftKneeAngle > 100 && rightKneeAngle <= 140 && rightKneeAngle > 100) {
+                        } else if (leftKneeAngle <= 140 && leftKneeAngle > 100 || rightKneeAngle <= 140 && rightKneeAngle > 100) {
                             feedback = "getting there, keep going"
-                        } else if (leftKneeAngle <= 100 && leftKneeAngle >= 80 && rightKneeAngle <= 100 && rightKneeAngle >= 80) {
+                        } else if (leftKneeAngle <= 100 && leftKneeAngle >= 80 || rightKneeAngle <= 100 && rightKneeAngle >= 80) {
                             feedback = "perfect depth"
-                        } else if (leftKneeAngle < 80 && rightKneeAngle < 80) {
-                            feedback = "great depth, come back up"
+                        } else if (leftKneeAngle < 80 || rightKneeAngle < 80) {
+                            feedback = "great depth, come back up!!!"
                         }
 
-                        //checks if new feedback is different than what it was so the feedback does not flicker
                         if (feedback !== feedbackRef.current) {
-                        feedbackRef.current = feedback
-                        setFeedbackText(feedback)
-                    }
-
-
-
-
+                            feedbackRef.current = feedback
+                            setFeedbackText(feedback)
+                        }
                     }
                 }
                 animationId = requestAnimationFrame(detect)
@@ -122,43 +123,48 @@ function Camera(){
         }
     }, [])
 
-    //takes 3 body landmark points and returns the angle between them in degrees
     const calculateAngle = (a, b, c) => {
-    const radians = Math.atan2(c.y - b.y, c.x - b.x) - Math.atan2(a.y - b.y, a.x - b.x)
-    let angle = Math.abs(radians * (180 / Math.PI))
-    if (angle > 180) angle = 360 - angle
-    return angle
-}
+        const radians = Math.atan2(c.y - b.y, c.x - b.x) - Math.atan2(a.y - b.y, a.x - b.x)
+        let angle = Math.abs(radians * (180 / Math.PI))
+        if (angle > 180) angle = 360 - angle
+        return angle
+    }
 
-    return (
-        <div className="w-screen h-screen bg-black flex flex-col items-center justify-start pt-6 md:pt-10 gap-4 md:gap-6">
-            <div className="flex flex-col items-center gap-2 px-4">
-                <h1 className="text-3xl md:text-6xl font-bold text-white drop-shadow-[0_0_20px_white] text-center">
-                    rep-mentor
-                </h1>
-                <p className="text-gray-400 text-sm md:text-md tracking-widest uppercase text-center">
-                    your real-time form coach
-                </p>
-                <p className="text-white pt-5 text-sm md:text-[15px] tracking-widest uppercase text-center">
-                    {exercise}
-                </p>
-
-                <p className="text-white text-2xl font-bold tracking-widest uppercase text-center mt-2">
+return (
+    <div className="w-screen h-screen bg-black flex flex-col items-center justify-start pt-6 md:pt-10 gap-4 md:gap-6">
+        <div className="flex flex-col items-center gap-2 px-4">
+            <h1 className="text-3xl md:text-6xl font-bold text-white drop-shadow-[0_0_20px_white] text-center">
+                rep-mentor
+            </h1>
+            <p className="text-gray-400 text-sm md:text-md tracking-widest uppercase text-center">
+                your real-time form coach
+            </p>
+            <p className="text-white pt-5 text-sm md:text-[15px] tracking-widest uppercase text-center">
+                {exercise}
+            </p>
+        </div>
+        <div className="relative w-full max-w-6xl">
+            <video 
+                ref={videoRef} 
+                className="w-full pt-1 rounded-xl h-[600px] md:h-[700px] object-cover"
+            />
+            <canvas
+                ref={canvasRef}
+                className="absolute top-0 left-0 w-full h-full rounded-xl"
+            />
+            <div className="absolute bottom-4 left-0 w-full flex flex-col items-center gap-2">
+                <p className="text-white text-2xl font-bold tracking-widest uppercase text-center bg-black/60 px-8 py-2 rounded-lg">
                     {feedbackText}
                 </p>
-            </div>
-            <div className="relative w-full max-w-6xl">
-                <video 
-                    ref={videoRef} 
-                    className="w-full pt-1 rounded-xl h-[600px] md:h-[700px] object-cover"
-                />
-                <canvas
-                    ref={canvasRef}
-                    className="absolute top-0 left-0 w-full h-full rounded-xl"
-                />
+                {exercise === 'squat' && (
+                    <p className="text-yellow-400 text-xs tracking-widest uppercase text-center bg-black/60 px-4 py-2 rounded-lg">
+                        turn sideways & make sure your whole body is in the frame
+                    </p>
+                )}
             </div>
         </div>
-    )
+    </div>
+)
 }
 
 export default Camera
