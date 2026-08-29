@@ -1,6 +1,7 @@
 import { useEffect } from "react"
 import { useRef } from "react"
 import { useLocation } from 'react-router-dom'
+import { useState } from "react"
 
 function Camera(){
     const videoRef = useRef()
@@ -79,6 +80,20 @@ function Camera(){
 
                         console.log("Left knee:", leftKneeAngle)
                         console.log("Right knee:", rightKneeAngle)
+
+                       let feedback = ""
+
+                        if (leftKneeAngle > 140 && rightKneeAngle > 140) {
+                            feedback = "squat deeper"
+                        } else if (leftKneeAngle <= 140 && leftKneeAngle > 100 && rightKneeAngle <= 140 && rightKneeAngle > 100) {
+                            feedback = "getting there, keep going"
+                        } else if (leftKneeAngle <= 100 && leftKneeAngle >= 80 && rightKneeAngle <= 100 && rightKneeAngle >= 80) {
+                            feedback = "perfect depth"
+                        } else if (leftKneeAngle < 80 && rightKneeAngle < 80) {
+                            feedback = "great depth, come back up"
+                        }
+
+                        console.log("Feedback:", feedback)
 
 
 
