@@ -1,9 +1,13 @@
 import { useEffect } from "react"
 import { useRef } from "react"
+import { useLocation } from 'react-router-dom'
 
 function Camera(){
     //logic before return statement
     const videoRef = useRef()  //ref (connection) to the video tag
+
+    const location = useLocation()
+    const exercise = location.state?.exercise // grabbing the exercise name that was selected
 
     useEffect(()=> { // block of code that useEffect will run after page load
     const startCamera = async () => {
@@ -24,9 +28,7 @@ function Camera(){
             videoRef.current.srcObject.getTracks().forEach(track => track.stop())
         }
     }
-}, [])
-
-
+    }, [])
 
 
 
@@ -44,7 +46,7 @@ return (
             </p>
             
              <p className="text-white pt-5 text-sm md:text-[15px] tracking-widest uppercase text-center">
-                name
+                {exercise}
             </p>
         </div>
      <video 
