@@ -6,6 +6,9 @@ import { useState } from "react"
 function Camera(){
     const videoRef = useRef()
     const canvasRef = useRef()
+    const repCountRef = useRef(0)
+    const squatPhaseRef = useRef("up")
+    const [repCount, setRepCount] = useState(0)
 
     const location = useLocation()
     const exercise = location.state?.exercise
@@ -15,6 +18,20 @@ function Camera(){
     const leftAngleHistoryRef = useRef([])
     const rightAngleHistoryRef = useRef([])
     const lastSpokenRef = useRef(0)
+
+    const playRepSound = () => {
+        const audioCtx = new AudioContext()
+        const oscillator = audioCtx.createOscillator()
+        const gainNode = audioCtx.createGain()
+        oscillator.connect(gainNode)
+        gainNode.connect(audioCtx.destination)
+        oscillator.type = "sine"
+        oscillator.frequency.setValueAtTime(880, audioCtx.currentTime)
+        gainNode.gain.setValueAtTime(0.3, audioCtx.currentTime)
+        gainNode.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.2)
+        oscillator.start(audioCtx.currentTime)
+        oscillator.stop(audioCtx.currentTime + 0.2)
+    }
 
     useEffect(()=> {
         const startCamera = async () => {
@@ -86,31 +103,44 @@ function Camera(){
                         leftAngleHistoryRef.current.push(leftKneeAngle)
                         rightAngleHistoryRef.current.push(rightKneeAngle)
 
-                       if (leftAngleHistoryRef.current.length > 30) leftAngleHistoryRef.current.shift()
-                       if (rightAngleHistoryRef.current.length > 30) rightAngleHistoryRef.current.shift()
+                        if (leftAngleHistoryRef.current.length > 30) leftAngleHistoryRef.current.shift()
+                        if (rightAngleHistoryRef.current.length > 30) rightAngleHistoryRef.current.shift()
                         
-                        //avraging last 40 angle readings to fix the feedback flicker bug
                         const smoothedLeft = leftAngleHistoryRef.current.reduce((a, b) => a + b, 0) / leftAngleHistoryRef.current.length
                         const smoothedRight = rightAngleHistoryRef.current.reduce((a, b) => a + b, 0) / rightAngleHistoryRef.current.length
 
+                        const avgAngle = (smoothedLeft + smoothedRight) / 2
+
                         let feedback = ""
-                        
-                        if (leftKneeAngle > 140 || rightKneeAngle > 140) {
-                            feedback = "squat deeper"
-                        } else if (leftKneeAngle <= 140 && leftKneeAngle > 100 || rightKneeAngle <= 140 && rightKneeAngle > 100) {
-                            feedback = "getting there, keep going"
-                        } else if (leftKneeAngle <= 100 && leftKneeAngle >= 80 || rightKneeAngle <= 100 && rightKneeAngle >= 80) {
-                            feedback = "perfect depth"
-                        } else if (leftKneeAngle < 80 || rightKneeAngle < 80) {
-                            feedback = "great depth, come back up!!!"
+
+                        if (squatPhaseRef.current === "up") {
+                            if (avgAngle > 140) {
+                                feedback = "squat deeper"
+                            } else if (avgAngle <= 140 && avgAngle > 100) {
+                                feedback = "getting there, keep going"
+                            } else if (avgAngle <= 100) {
+                                squatPhaseRef.current = "down"
+                                feedback = "perfect depth"
+                            }
+                        } else if (squatPhaseRef.current === "down") {
+                            if (avgAngle < 60) {
+                                feedback = "too low! that's not a squat"
+                            } else if (avgAngle >= 140) {
+                                squatPhaseRef.current = "up"
+                                repCountRef.current += 1
+                                setRepCount(repCountRef.current)
+                                playRepSound()
+                                feedback = ""
+                            } else {
+                                feedback = ""
+                            }
                         }
 
                         if (feedback !== feedbackRef.current) {
                             feedbackRef.current = feedback
                             setFeedbackText(feedback)
 
-                            //voice feedback
-                           if (feedback) {
+                            if (feedback) {
                                 const now = Date.now()
                                 if (now - lastSpokenRef.current > 1000) {
                                     window.speechSynthesis.cancel()
@@ -146,22 +176,22 @@ function Camera(){
     }
 
 return (
-    <div className="w-screen h-screen bg-black flex flex-col items-center justify-start pt-6 md:pt-10 gap-4 md:gap-6">
+    <div className="w-screen min-h-screen bg-black flex flex-col items-center justify-start py-6 px-6 md:py-10 xl:py-10 gap-3 md:gap-6 overflow-hidden">
         <div className="flex flex-col items-center gap-2 px-4">
-            <h1 className="text-3xl md:text-6xl font-bold text-white drop-shadow-[0_0_20px_white] text-center">
+            <h1 className="text-4xl md:text-6xl xl:text-5xl font-bold text-white drop-shadow-[0_0_20px_white] text-center pt-4">
                 rep-mentor
             </h1>
-            <p className="text-gray-400 text-sm md:text-md tracking-widest uppercase text-center">
+            <p className="text-gray-400 text-xs md:text-md tracking-widest pt-0.5 uppercase text-center">
                 your real-time form coach
             </p>
-            <p className="text-white pt-5 text-sm md:text-[15px] tracking-widest uppercase text-center">
+            <p className="text-purple-300 font-bold text-sm md:text-[15px] tracking-widest uppercase text-center">
                 {exercise}
             </p>
         </div>
-        <div className="relative w-full max-w-6xl">
+        <div className="relative w-full max-w-5xl xl:max-w-5xl pt-1">
             <video 
                 ref={videoRef} 
-                className="w-full pt-1 rounded-xl h-[600px] md:h-[700px] object-cover"
+                className="w-full rounded-xl h-[570px] md:h-[700px] xl:h-[580px] object-cover"
             />
             <canvas
                 ref={canvasRef}
@@ -171,9 +201,12 @@ return (
                 <p className="text-white text-2xl font-bold tracking-widest uppercase text-center bg-black/60 px-8 py-2 rounded-lg">
                     {feedbackText}
                 </p>
+                <p className="text-white text-2xl font-bold tracking-widest uppercase text-center bg-black/60 px-8 py-2 rounded-lg">
+                    reps: {repCount}
+                </p>
                 {exercise === 'squat' && (
                     <p className="text-yellow-400 text-xs tracking-widest uppercase text-center bg-black/60 px-4 py-2 rounded-lg">
-                        turn sideways & make sure your whole body is in the frame
+                        stand facing the camera & make sure your whole body is visible
                     </p>
                 )}
             </div>
