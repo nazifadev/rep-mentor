@@ -8,7 +8,9 @@ function Camera(){
     const canvasRef = useRef()
     const repCountRef = useRef(0)
     const squatPhaseRef = useRef("up")
+    const repCooldownRef = useRef(0)
     const [repCount, setRepCount] = useState(0)
+    const [started, setStarted] = useState(false)
 
     const location = useLocation()
     const exercise = location.state?.exercise
@@ -54,6 +56,8 @@ function Camera(){
     }, [])
 
     useEffect(() => {
+        if (!started) return
+
         let animationId
 
         const initMediaPipe = async () => {
@@ -114,22 +118,29 @@ function Camera(){
                         let feedback = ""
 
                         if (squatPhaseRef.current === "up") {
-                            if (avgAngle > 140) {
+                            if (Date.now() - repCooldownRef.current < 2000) {
+                                feedback = ""
+                            } else if (avgAngle > 150) {
                                 feedback = "squat deeper"
-                            } else if (avgAngle <= 140 && avgAngle > 100) {
+                            } else if (avgAngle <= 150 && avgAngle > 120) {
                                 feedback = "getting there, keep going"
-                            } else if (avgAngle <= 100) {
+                            } else if (avgAngle <= 120 && avgAngle >= 100) {
                                 squatPhaseRef.current = "down"
                                 feedback = "perfect depth"
+                            } else if (avgAngle < 100) {
+                                squatPhaseRef.current = "down"
+                                feedback = "too low! that's not a squat"
                             }
                         } else if (squatPhaseRef.current === "down") {
-                            if (avgAngle < 60) {
+                            if (avgAngle < 100) {
                                 feedback = "too low! that's not a squat"
-                            } else if (avgAngle >= 140) {
+                            } else if (avgAngle >= 150) {
+                                window.speechSynthesis.cancel()
                                 squatPhaseRef.current = "up"
                                 repCountRef.current += 1
                                 setRepCount(repCountRef.current)
                                 playRepSound()
+                                repCooldownRef.current = Date.now()
                                 feedback = ""
                             } else {
                                 feedback = ""
@@ -166,7 +177,7 @@ function Camera(){
         return () => {
             if (animationId) cancelAnimationFrame(animationId)
         }
-    }, [])
+    }, [started])
 
     const calculateAngle = (a, b, c) => {
         const radians = Math.atan2(c.y - b.y, c.x - b.x) - Math.atan2(a.y - b.y, a.x - b.x)
@@ -198,12 +209,23 @@ return (
                 className="absolute top-0 left-0 w-full h-full rounded-xl"
             />
             <div className="absolute bottom-4 left-0 w-full flex flex-col items-center gap-2">
-                <p className="text-white text-2xl font-bold tracking-widest uppercase text-center bg-black/60 px-8 py-2 rounded-lg">
-                    {feedbackText}
-                </p>
-                <p className="text-white text-2xl font-bold tracking-widest uppercase text-center bg-black/60 px-8 py-2 rounded-lg">
-                    reps: {repCount}
-                </p>
+                {!started ? (
+                    <button
+                        onClick={() => setStarted(true)}
+                        className="bg-purple-600 hover:bg-purple-500 text-white text-xl font-bold tracking-widest uppercase px-12 py-3 rounded-lg"
+                    >
+                        start
+                    </button>
+                ) : (
+                    <>
+                        <p className="text-white text-2xl font-bold tracking-widest uppercase text-center bg-black/60 px-8 py-2 rounded-lg">
+                            {feedbackText}
+                        </p>
+                        <p className="text-white text-2xl font-bold tracking-widest uppercase text-center bg-black/60 px-8 py-2 rounded-lg">
+                            reps: {repCount}
+                        </p>
+                    </>
+                )}
                 {exercise === 'squat' && (
                     <p className="text-yellow-400 text-xs tracking-widest uppercase text-center bg-black/60 px-4 py-2 rounded-lg">
                         stand facing the camera & make sure your whole body is visible
