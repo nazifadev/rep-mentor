@@ -2,6 +2,7 @@ import { useEffect } from "react"
 import { useRef } from "react"
 import { useLocation } from 'react-router-dom'
 import { useState } from "react"
+import { getSquatFeedback } from "../logic/squatLogic"
 
 function Camera(){
     const videoRef = useRef()
@@ -11,6 +12,7 @@ function Camera(){
     const repCooldownRef = useRef(0)
     const [repCount, setRepCount] = useState(0)
     const [started, setStarted] = useState(false)
+    const [bodyVisible, setBodyVisible] = useState(false)
 
     const location = useLocation()
     const exercise = location.state?.exercise
@@ -92,60 +94,28 @@ function Camera(){
                     if (results.landmarks.length > 0) {
                         drawingUtils.drawLandmarks(results.landmarks[0])
                         drawingUtils.drawConnectors(results.landmarks[0], PoseLandmarker.POSE_CONNECTIONS)
-                        
+
                         const landmarks = results.landmarks[0]
-                        const leftHip = landmarks[23]
-                        const leftKnee = landmarks[25]
-                        const leftAnkle = landmarks[27]
-                        const rightHip = landmarks[24]
-                        const rightKnee = landmarks[26]
-                        const rightAnkle = landmarks[28]
 
-                        const leftKneeAngle = calculateAngle(leftHip, leftKnee, leftAnkle)
-                        const rightKneeAngle = calculateAngle(rightHip, rightKnee, rightAnkle)
+                        const keyPoints = [23, 24, 25, 26, 27, 28]
+                        const allVisible = keyPoints.every(i => landmarks[i].visibility > 0.5)
 
-                        leftAngleHistoryRef.current.push(leftKneeAngle)
-                        rightAngleHistoryRef.current.push(rightKneeAngle)
+                        if (!allVisible) {
+                            setBodyVisible(false)
+                            if (feedbackRef.current !== "") {
+                                feedbackRef.current = ""
+                                setFeedbackText("")
+                            }
+                            animationId = requestAnimationFrame(detect)
+                            return
+                        }
 
-                        if (leftAngleHistoryRef.current.length > 30) leftAngleHistoryRef.current.shift()
-                        if (rightAngleHistoryRef.current.length > 30) rightAngleHistoryRef.current.shift()
-                        
-                        const smoothedLeft = leftAngleHistoryRef.current.reduce((a, b) => a + b, 0) / leftAngleHistoryRef.current.length
-                        const smoothedRight = rightAngleHistoryRef.current.reduce((a, b) => a + b, 0) / rightAngleHistoryRef.current.length
-
-                        const avgAngle = (smoothedLeft + smoothedRight) / 2
+                        setBodyVisible(true)
 
                         let feedback = ""
 
-                        if (squatPhaseRef.current === "up") {
-                            if (Date.now() - repCooldownRef.current < 2000) {
-                                feedback = ""
-                            } else if (avgAngle > 150) {
-                                feedback = "squat deeper"
-                            } else if (avgAngle <= 150 && avgAngle > 120) {
-                                feedback = "getting there, keep going"
-                            } else if (avgAngle <= 120 && avgAngle >= 100) {
-                                squatPhaseRef.current = "down"
-                                feedback = "perfect depth"
-                            } else if (avgAngle < 100) {
-                                squatPhaseRef.current = "down"
-                                feedback = "too low! that's not a squat"
-                            }
-                        } else if (squatPhaseRef.current === "down") {
-                            if (avgAngle < 100) {
-                                feedback = "too low! that's not a squat"
-                            } else if (avgAngle >= 150) {
-                                window.speechSynthesis.cancel()
-                                squatPhaseRef.current = "up"
-                                repCountRef.current += 1
-                                setRepCount(repCountRef.current)
-                                playRepSound()
-                                repCooldownRef.current = Date.now()
-                                feedback = ""
-                            } else {
-                                feedback = ""
-                            }
-                        }
+                        if (exercise === "squat") {
+                            feedback = getSquatFeedback(landmarks, squatPhaseRef, repCountRef, repCooldownRef, setRepCount, playRepSound)                        }
 
                         if (feedback !== feedbackRef.current) {
                             feedbackRef.current = feedback
@@ -179,13 +149,6 @@ function Camera(){
         }
     }, [started])
 
-    const calculateAngle = (a, b, c) => {
-        const radians = Math.atan2(c.y - b.y, c.x - b.x) - Math.atan2(a.y - b.y, a.x - b.x)
-        let angle = Math.abs(radians * (180 / Math.PI))
-        if (angle > 180) angle = 360 - angle
-        return angle
-    }
-
 return (
     <div className="w-screen min-h-screen bg-black flex flex-col items-center justify-start py-6 px-6 md:py-10 xl:py-10 gap-3 md:gap-6 overflow-hidden">
         <div className="flex flex-col items-center gap-2 px-4">
@@ -218,12 +181,16 @@ return (
                     </button>
                 ) : (
                     <>
-                        <p className="text-white text-2xl font-bold tracking-widest uppercase text-center bg-black/60 px-8 py-2 rounded-lg">
-                            {feedbackText}
-                        </p>
-                        <p className="text-white text-2xl font-bold tracking-widest uppercase text-center bg-black/60 px-8 py-2 rounded-lg">
-                            reps: {repCount}
-                        </p>
+                        {feedbackText && (
+                            <p className="text-white text-2xl font-bold tracking-widest uppercase text-center bg-black/60 px-8 py-2 rounded-lg">
+                                {feedbackText}
+                            </p>
+                        )}
+                        {bodyVisible && (
+                            <p className="text-white text-2xl font-bold tracking-widest uppercase text-center bg-black/60 px-8 py-2 rounded-lg">
+                                reps: {repCount}
+                            </p>
+                        )}
                     </>
                 )}
                 {exercise === 'squat' && (
