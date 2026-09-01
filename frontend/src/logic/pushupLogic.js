@@ -16,28 +16,29 @@ export const getPushupFeedback = (landmarks, phaseRef, repCountRef, repCooldownR
     const leftElbowAngle = calculateAngle(leftShoulder, leftElbow, leftWrist)
     const rightElbowAngle = calculateAngle(rightShoulder, rightElbow, rightWrist)
 
-    const avgAngle = (leftElbowAngle + rightElbowAngle) / 2
+    const avgAngle = Math.min(leftElbowAngle, rightElbowAngle)
+    console.log(avgAngle)
 
     let feedback = ""
 
     if (phaseRef.current === "up") {
         if (Date.now() - repCooldownRef.current < 2000) {
             feedback = ""
-        } else if (avgAngle > 160) {
+       } else if (avgAngle > 155) {
             feedback = "lower your chest"
-        } else if (avgAngle <= 160 && avgAngle > 110) {
+        } else if (avgAngle <= 155 && avgAngle > 120) {
             feedback = "getting there, keep going"
-        } else if (avgAngle <= 110 && avgAngle >= 90) {
+        } else if (avgAngle <= 120 && avgAngle >= 60) {
             phaseRef.current = "down"
             feedback = "perfect depth"
-        } else if (avgAngle < 90) {
+        } else if (avgAngle < 60) {
             phaseRef.current = "down"
             feedback = "too low!"
         }
     } else if (phaseRef.current === "down") {
-        if (avgAngle < 90) {
+        if (avgAngle < 85) {
             feedback = "too low!"
-        } else if (avgAngle >= 160) {
+        } else if (avgAngle >= 155) {
             window.speechSynthesis.cancel()
             phaseRef.current = "up"
             repCountRef.current += 1

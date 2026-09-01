@@ -109,12 +109,16 @@ function Camera(){
 
                         const landmarks = results.landmarks[0]
 
-                        const keyPoints = exercise === "push-up"
-                            ? [11, 12, 13, 14, 15, 16]
-                            : exercise === "sit-up"
-                            ? [11, 12, 23, 24, 25, 26]
-                            : [23, 24, 25, 26, 27, 28]
-                        const allVisible = keyPoints.every(i => landmarks[i].visibility > 0.5)
+                       let allVisible
+                    if (exercise === "push-up") {
+                        const leftVisible = [11, 13, 15].every(i => landmarks[i].visibility > 0.5)
+                        const rightVisible = [12, 14, 16].every(i => landmarks[i].visibility > 0.5)
+                        allVisible = leftVisible || rightVisible
+                    } else if (exercise === "sit-up") {
+                        allVisible = [11, 12, 23, 24, 25, 26].every(i => landmarks[i].visibility > 0.5)
+                    } else {
+                        allVisible = [23, 24, 25, 26, 27, 28].every(i => landmarks[i].visibility > 0.5)
+                    }
 
                         if (!allVisible) {
                             setBodyVisible(false)
