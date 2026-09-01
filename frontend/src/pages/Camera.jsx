@@ -156,14 +156,15 @@ function Camera(){
 
 return (
     <div className="w-screen min-h-screen bg-black flex flex-col items-center justify-start py-6 px-6 md:py-10 xl:py-10 gap-3 md:gap-6 overflow-hidden">
+
         <div className="flex flex-col items-center gap-2 px-4">
-            <h1 className="text-4xl md:text-6xl xl:text-5xl font-bold text-white drop-shadow-[0_0_20px_white] text-center pt-4">
+            <h1 className="text-4xl md:text-6xl xl:text-5xl font-bold text-white drop-shadow-[0_0_20px_#cefcff] text-center pt-4">
                 rep-mentor
             </h1>
             <p className="text-gray-400 text-xs md:text-md tracking-widest pt-0.5 uppercase text-center">
                 your real-time form coach
             </p>
-            <p className="text-purple-300 font-bold text-sm md:text-[15px] tracking-widest uppercase text-center">
+            <p className="text-[#cefcff] font-bold text-sm md:text-[15px] tracking-widest uppercase text-center">
                 {exercise}
             </p>
         </div>
@@ -180,7 +181,7 @@ return (
                 {!started ? (
                     <button
                         onClick={() => setStarted(true)}
-                        className="bg-purple-600 hover:bg-purple-500 text-white text-xl font-bold tracking-widest uppercase px-12 py-3 rounded-lg"
+                        className="bg-[#cefcff] hover:opacity-80 text-black text-xl font-bold tracking-widest uppercase px-12 py-3 rounded-lg"
                     >
                         start
                     </button>
