@@ -5,7 +5,7 @@ const calculateAngle = (a, b, c) => {
     return angle
 }
 
-export const getPushupFeedback = (landmarks, phaseRef, repCountRef, repCooldownRef, setRepCount, playRepSound) => {
+export const getPushupFeedback = (landmarks, phaseRef, repCountRef, repCooldownRef, setRepCount, playRepSound, validRepRef) => {
     const leftShoulder = landmarks[11]
     const leftElbow = landmarks[13]
     const leftWrist = landmarks[15]
@@ -17,33 +17,36 @@ export const getPushupFeedback = (landmarks, phaseRef, repCountRef, repCooldownR
     const rightElbowAngle = calculateAngle(rightShoulder, rightElbow, rightWrist)
 
     const avgAngle = Math.min(leftElbowAngle, rightElbowAngle)
-    console.log(avgAngle)
 
     let feedback = ""
 
     if (phaseRef.current === "up") {
         if (Date.now() - repCooldownRef.current < 2000) {
             feedback = ""
-       } else if (avgAngle > 155) {
+        } else if (avgAngle > 155) {
             feedback = "lower your chest"
         } else if (avgAngle <= 155 && avgAngle > 120) {
             feedback = "getting there, keep going"
         } else if (avgAngle <= 120 && avgAngle >= 60) {
             phaseRef.current = "down"
+            validRepRef.current = true
             feedback = "perfect depth"
         } else if (avgAngle < 60) {
             phaseRef.current = "down"
             feedback = "too low!"
         }
     } else if (phaseRef.current === "down") {
-        if (avgAngle < 85) {
+        if (avgAngle < 60) {
             feedback = "too low!"
         } else if (avgAngle >= 155) {
             window.speechSynthesis.cancel()
             phaseRef.current = "up"
-            repCountRef.current += 1
-            setRepCount(repCountRef.current)
-            playRepSound()
+            if (validRepRef.current) {
+                repCountRef.current += 1
+                setRepCount(repCountRef.current)
+                playRepSound()
+            }
+            validRepRef.current = false
             repCooldownRef.current = Date.now()
             feedback = ""
         } else {

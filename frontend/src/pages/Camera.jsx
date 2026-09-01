@@ -17,6 +17,7 @@ function Camera(){
     const [started, setStarted] = useState(false)
     const [bodyVisible, setBodyVisible] = useState(false)
     const voicesRef = useRef([])
+    const validRepRef = useRef(false)
 
     const location = useLocation()
     const exercise = location.state?.exercise
@@ -135,14 +136,10 @@ function Camera(){
                         let feedback = ""
 
                         if (exercise === "squat") {
-                            feedback = getSquatFeedback(landmarks, squatPhaseRef, repCountRef, repCooldownRef, setRepCount, playRepSound)
-                        } else if (exercise === "push-up") {
-                            feedback = getPushupFeedback(landmarks, squatPhaseRef, repCountRef, repCooldownRef, setRepCount, playRepSound)
-                        } else if (exercise === "lunge") {
-                            feedback = getLungeFeedback(landmarks, squatPhaseRef, repCountRef, repCooldownRef, setRepCount, playRepSound)
-                        } else if (exercise === "sit-up") {
-                            feedback = getSitUpFeedback(landmarks, squatPhaseRef, repCountRef, repCooldownRef, setRepCount, playRepSound)
-                        }
+                            feedback = getSquatFeedback(landmarks, squatPhaseRef, repCountRef, repCooldownRef, setRepCount, playRepSound, validRepRef)                        } else if (exercise === "push-up") {
+                            feedback = getPushupFeedback(landmarks, squatPhaseRef, repCountRef, repCooldownRef, setRepCount, playRepSound, validRepRef)                        } else if (exercise === "lunge") {
+                            feedback = getLungeFeedback(landmarks, squatPhaseRef, repCountRef, repCooldownRef, setRepCount, playRepSound, validRepRef)                        } else if (exercise === "sit-up") {
+                            feedback = getSitUpFeedback(landmarks, squatPhaseRef, repCountRef, repCooldownRef, setRepCount, playRepSound, validRepRef)                        }
 
                         if (feedback !== feedbackRef.current) {
                             feedbackRef.current = feedback
@@ -221,11 +218,26 @@ return (
                         )}
                     </>
                 )}
-                {exercise === 'squat' && (
-                    <p className="text-yellow-400 text-xs tracking-widest uppercase text-center bg-black/60 px-4 py-2 rounded-lg">
-                        stand facing the camera & make sure your whole body is visible
-                    </p>
-                )}
+               {exercise === 'squat' && (
+                <p className="text-yellow-400 text-xs tracking-widest uppercase text-center bg-black/60 px-4 py-2 rounded-lg">
+                    stand facing the camera & make sure your whole body is visible
+                </p>
+            )}
+            {exercise === 'lunge' && (
+                <p className="text-yellow-400 text-xs tracking-widest uppercase text-center bg-black/60 px-4 py-2 rounded-lg">
+                    turn sideways & make sure your whole body is visible
+                </p>
+            )}
+            {exercise === 'push-up' && (
+            <p className="text-yellow-400 text-xs tracking-widest uppercase text-center bg-black/60 px-4 py-2 rounded-lg">
+                turn sideways & place camera at floor level so your whole body is visible
+            </p>
+            )}
+            {exercise === 'sit-up' && (
+                <p className="text-yellow-400 text-xs tracking-widest uppercase text-center bg-black/60 px-4 py-2 rounded-lg">
+                    turn sideways & place camera at floor level so your whole body is visible
+                </p>
+            )}
             </div>
         </div>
     </div>

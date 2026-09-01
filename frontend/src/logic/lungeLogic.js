@@ -5,7 +5,7 @@ const calculateAngle = (a, b, c) => {
     return angle
 }
 
-export const getLungeFeedback = (landmarks, phaseRef, repCountRef, repCooldownRef, setRepCount, playRepSound) => {
+export const getLungeFeedback = (landmarks, phaseRef, repCountRef, repCooldownRef, setRepCount, playRepSound, validRepRef) => {
     const leftHip = landmarks[23]
     const leftKnee = landmarks[25]
     const leftAnkle = landmarks[27]
@@ -25,24 +25,28 @@ export const getLungeFeedback = (landmarks, phaseRef, repCountRef, repCooldownRe
             feedback = ""
         } else if (minAngle > 150) {
             feedback = "lunge deeper"
-        } else if (minAngle <= 150 && minAngle > 110) {
+        } else if (minAngle <= 150 && minAngle > 120) {
             feedback = "getting there, keep going"
-        } else if (minAngle <= 110 && minAngle >= 90) {
+        } else if (minAngle <= 120 && minAngle >= 70) {
             phaseRef.current = "down"
+            validRepRef.current = true
             feedback = "perfect depth"
-        } else if (minAngle < 90) {
+        } else if (minAngle < 70) {
             phaseRef.current = "down"
             feedback = "too low!"
         }
     } else if (phaseRef.current === "down") {
-        if (minAngle < 90) {
+        if (minAngle < 70) {
             feedback = "too low!"
         } else if (minAngle >= 150) {
             window.speechSynthesis.cancel()
             phaseRef.current = "up"
-            repCountRef.current += 1
-            setRepCount(repCountRef.current)
-            playRepSound()
+            if (validRepRef.current) {
+                repCountRef.current += 1
+                setRepCount(repCountRef.current)
+                playRepSound()
+            }
+            validRepRef.current = false
             repCooldownRef.current = Date.now()
             feedback = ""
         } else {

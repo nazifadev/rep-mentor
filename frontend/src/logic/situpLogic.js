@@ -5,7 +5,7 @@ const calculateAngle = (a, b, c) => {
     return angle
 }
 
-export const getSitUpFeedback = (landmarks, phaseRef, repCountRef, repCooldownRef, setRepCount, playRepSound) => {
+export const getSitUpFeedback = (landmarks, phaseRef, repCountRef, repCooldownRef, setRepCount, playRepSound, validRepRef) => {
     const leftShoulder = landmarks[11]
     const leftHip = landmarks[23]
     const leftKnee = landmarks[25]
@@ -29,6 +29,7 @@ export const getSitUpFeedback = (landmarks, phaseRef, repCountRef, repCooldownRe
             feedback = "getting there, keep going"
         } else if (avgAngle <= 110 && avgAngle >= 80) {
             phaseRef.current = "down"
+            validRepRef.current = true
             feedback = "great crunch!"
         } else if (avgAngle < 80) {
             phaseRef.current = "down"
@@ -40,9 +41,12 @@ export const getSitUpFeedback = (landmarks, phaseRef, repCountRef, repCooldownRe
         } else if (avgAngle >= 150) {
             window.speechSynthesis.cancel()
             phaseRef.current = "up"
-            repCountRef.current += 1
-            setRepCount(repCountRef.current)
-            playRepSound()
+            if (validRepRef.current) {
+                repCountRef.current += 1
+                setRepCount(repCountRef.current)
+                playRepSound()
+            }
+            validRepRef.current = false
             repCooldownRef.current = Date.now()
             feedback = ""
         } else {
