@@ -30,9 +30,11 @@ function ExerciseSelection() {
           <h1 className=" fraunces-hero text-[#cefcff]  md:pt-0 leading-none text-center md:text-left text-6xl sm:text-6xl md:text-7xl xl:text-[130px] 2xl:text-[180px]">
             welcome,<br />let's move.
           </h1>
-          <div className="hidden md:block w-px h-24 2xl:h-44 bg-gray-700 shrink-0" />
-          <p className="text-gray-400 text-sm md:text-base pt-1 md:pt-0 2xl:text-2xl text-center md:text-left max-w-[260px] 2xl:max-w-[350px]">
+          <div className="hidden md:block w-px h-26 2xl:h-44 bg-gray-700 shrink-0" />
+          <p className="text-gray-400 text-sm md:text-base pt-1 md:pt-0 2xl:text-2xl text-center md:text-left max-w-[560px] 2xl:max-w-[450px]">
             Choose one of four movements. We'll watch your form and coach each rep.
+            For the best experience, find a clear open space with minimal furniture in the background.
+            Make sure the area is well lit and your full body is visible to the camera. Move at a controlled, steady pace as rapid movements may affect tracking accuracy.
           </p>
           <div className="w-full border-b border-gray-800 md:hidden" />
 

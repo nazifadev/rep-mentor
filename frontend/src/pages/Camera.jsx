@@ -18,6 +18,8 @@ function Camera(){
     const [bodyVisible, setBodyVisible] = useState(false)
     const voicesRef = useRef([])
     const validRepRef = useRef(false)
+    const [countdown, setCountdown] = useState(15)
+    const countdownRef = useRef(15)
 
     const location = useLocation()
     const exercise = location.state?.exercise
@@ -40,6 +42,20 @@ function Camera(){
         gainNode.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.2)
         oscillator.start(audioCtx.currentTime)
         oscillator.stop(audioCtx.currentTime + 0.2)
+    }
+
+    const playCountdownBeep = (isLast) => {
+        const audioCtx = new AudioContext()
+        const oscillator = audioCtx.createOscillator()
+        const gainNode = audioCtx.createGain()
+        oscillator.connect(gainNode)
+        gainNode.connect(audioCtx.destination)
+        oscillator.type = "sine"
+        oscillator.frequency.setValueAtTime(isLast ? 1200 : 600, audioCtx.currentTime)
+        gainNode.gain.setValueAtTime(0.3, audioCtx.currentTime)
+        gainNode.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.1)
+        oscillator.start(audioCtx.currentTime)
+        oscillator.stop(audioCtx.currentTime + 0.1)
     }
 
     useEffect(() => {
@@ -69,6 +85,21 @@ function Camera(){
             }
         }
     }, [])
+
+    useEffect(() => {
+        if (!started) return
+        countdownRef.current = 15
+        setCountdown(15)
+        const timer = setInterval(() => {
+            countdownRef.current -= 1
+            setCountdown(countdownRef.current)
+            playCountdownBeep(countdownRef.current === 0)
+            if (countdownRef.current <= 0) {
+                clearInterval(timer)
+            }
+        }, 1000)
+        return () => clearInterval(timer)
+    }, [started])
 
     useEffect(() => {
         if (!started) return
@@ -110,16 +141,16 @@ function Camera(){
 
                         const landmarks = results.landmarks[0]
 
-                       let allVisible
-                    if (exercise === "push-up") {
-                        const leftVisible = [11, 13, 15].every(i => landmarks[i].visibility > 0.5)
-                        const rightVisible = [12, 14, 16].every(i => landmarks[i].visibility > 0.5)
-                        allVisible = leftVisible || rightVisible
-                    } else if (exercise === "sit-up") {
-                        allVisible = [11, 12, 23, 24, 25, 26].every(i => landmarks[i].visibility > 0.5)
-                    } else {
-                        allVisible = [23, 24, 25, 26, 27, 28].every(i => landmarks[i].visibility > 0.5)
-                    }
+                        let allVisible
+                        if (exercise === "push-up") {
+                            const leftVisible = [11, 13, 15].every(i => landmarks[i].visibility > 0.5)
+                            const rightVisible = [12, 14, 16].every(i => landmarks[i].visibility > 0.5)
+                            allVisible = leftVisible || rightVisible
+                        } else if (exercise === "sit-up") {
+                            allVisible = [11, 12, 23, 24, 25, 26].every(i => landmarks[i].visibility > 0.5)
+                        } else {
+                            allVisible = [23, 24, 25, 26, 27, 28].every(i => landmarks[i].visibility > 0.5)
+                        }
 
                         if (!allVisible) {
                             setBodyVisible(false)
@@ -133,13 +164,22 @@ function Camera(){
 
                         setBodyVisible(true)
 
+                        if (countdownRef.current > 0) {
+                            animationId = requestAnimationFrame(detect)
+                            return
+                        }
+
                         let feedback = ""
 
                         if (exercise === "squat") {
-                            feedback = getSquatFeedback(landmarks, squatPhaseRef, repCountRef, repCooldownRef, setRepCount, playRepSound, validRepRef)                        } else if (exercise === "push-up") {
-                            feedback = getPushupFeedback(landmarks, squatPhaseRef, repCountRef, repCooldownRef, setRepCount, playRepSound, validRepRef)                        } else if (exercise === "lunge") {
-                            feedback = getLungeFeedback(landmarks, squatPhaseRef, repCountRef, repCooldownRef, setRepCount, playRepSound, validRepRef)                        } else if (exercise === "sit-up") {
-                            feedback = getSitUpFeedback(landmarks, squatPhaseRef, repCountRef, repCooldownRef, setRepCount, playRepSound, validRepRef)                        }
+                            feedback = getSquatFeedback(landmarks, squatPhaseRef, repCountRef, repCooldownRef, setRepCount, playRepSound, validRepRef)
+                        } else if (exercise === "push-up") {
+                            feedback = getPushupFeedback(landmarks, squatPhaseRef, repCountRef, repCooldownRef, setRepCount, playRepSound, validRepRef)
+                        } else if (exercise === "lunge") {
+                            feedback = getLungeFeedback(landmarks, squatPhaseRef, repCountRef, repCooldownRef, setRepCount, playRepSound, validRepRef)
+                        } else if (exercise === "sit-up") {
+                            feedback = getSitUpFeedback(landmarks, squatPhaseRef, repCountRef, repCooldownRef, setRepCount, playRepSound, validRepRef)
+                        }
 
                         if (feedback !== feedbackRef.current) {
                             feedbackRef.current = feedback
@@ -206,38 +246,48 @@ return (
                     </button>
                 ) : (
                     <>
-                        {feedbackText && (
+                        {countdown > 0 && (
+                            <>
+                                <p className="text-white text-lg font-bold tracking-widest uppercase text-center bg-black/60 px-8 py-2 rounded-lg">
+                                    get into position!
+                                </p>
+                                <p className="text-[#cefcff] text-4xl font-bold tracking-widest text-center bg-black/60 px-8 py-2 rounded-lg">
+                                    {countdown}
+                                </p>
+                            </>
+                        )}
+                        {countdown === 0 && feedbackText && (
                             <p className="text-white text-2xl font-bold tracking-widest uppercase text-center bg-black/60 px-8 py-2 rounded-lg">
                                 {feedbackText}
                             </p>
                         )}
-                        {bodyVisible && (
+                        {countdown === 0 && bodyVisible && (
                             <p className="text-white text-2xl font-bold tracking-widest uppercase text-center bg-black/60 px-8 py-2 rounded-lg">
                                 reps: {repCount}
                             </p>
                         )}
                     </>
                 )}
-               {exercise === 'squat' && (
-                <p className="text-yellow-400 text-xs tracking-widest uppercase text-center bg-black/60 px-4 py-2 rounded-lg">
-                    stand facing the camera & make sure your whole body is visible
-                </p>
-            )}
-            {exercise === 'lunge' && (
-                <p className="text-yellow-400 text-xs tracking-widest uppercase text-center bg-black/60 px-4 py-2 rounded-lg">
-                    turn sideways & make sure your whole body is visible
-                </p>
-            )}
-            {exercise === 'push-up' && (
-            <p className="text-yellow-400 text-xs tracking-widest uppercase text-center bg-black/60 px-4 py-2 rounded-lg">
-                turn sideways & place camera at floor level so your whole body is visible
-            </p>
-            )}
-            {exercise === 'sit-up' && (
-                <p className="text-yellow-400 text-xs tracking-widest uppercase text-center bg-black/60 px-4 py-2 rounded-lg">
-                    turn sideways & place camera at floor level so your whole body is visible
-                </p>
-            )}
+                {exercise === 'squat' && (
+                    <p className="text-yellow-400 text-xs tracking-widest uppercase text-center bg-black/60 px-4 py-2 rounded-lg">
+                        stand facing the camera & make sure your whole body is visible
+                    </p>
+                )}
+                {exercise === 'lunge' && (
+                    <p className="text-yellow-400 text-xs tracking-widest uppercase text-center bg-black/60 px-4 py-2 rounded-lg">
+                        turn sideways & make sure your whole body is visible
+                    </p>
+                )}
+                {exercise === 'push-up' && (
+                    <p className="text-yellow-400 text-xs tracking-widest uppercase text-center bg-black/60 px-4 py-2 rounded-lg">
+                        turn sideways & place camera at floor level so your whole body is visible
+                    </p>
+                )}
+                {exercise === 'sit-up' && (
+                    <p className="text-yellow-400 text-xs tracking-widest uppercase text-center bg-black/60 px-4 py-2 rounded-lg">
+                        turn sideways & place camera at floor level so your whole body is ratio visible
+                    </p>
+                )}
             </div>
         </div>
     </div>
