@@ -3,6 +3,7 @@ import { useRef } from "react"
 import { useLocation } from 'react-router-dom'
 import { useState } from "react"
 import { getSquatFeedback } from "../logic/squatLogic"
+import { getPushupFeedback } from "../logic/pushupLogic"
 
 function Camera(){
     const videoRef = useRef()
@@ -97,9 +98,10 @@ function Camera(){
 
                         const landmarks = results.landmarks[0]
 
-                        const keyPoints = [23, 24, 25, 26, 27, 28]
+                       const keyPoints = exercise === "push-up"
+                            ? [11, 12, 13, 14, 15, 16]
+                            : [23, 24, 25, 26, 27, 28]
                         const allVisible = keyPoints.every(i => landmarks[i].visibility > 0.5)
-
                         if (!allVisible) {
                             setBodyVisible(false)
                             if (feedbackRef.current !== "") {
@@ -114,8 +116,11 @@ function Camera(){
 
                         let feedback = ""
 
-                        if (exercise === "squat") {
-                            feedback = getSquatFeedback(landmarks, squatPhaseRef, repCountRef, repCooldownRef, setRepCount, playRepSound)                        }
+                       if (exercise === "squat") {
+                        feedback = getSquatFeedback(landmarks, squatPhaseRef, repCountRef, repCooldownRef, setRepCount, playRepSound)
+                    } else if (exercise === "push-up") {
+                        feedback = getPushupFeedback(landmarks, squatPhaseRef, repCountRef, repCooldownRef, setRepCount, playRepSound)
+                    }
 
                         if (feedback !== feedbackRef.current) {
                             feedbackRef.current = feedback
