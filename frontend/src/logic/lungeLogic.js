@@ -20,5 +20,35 @@ export const getLungeFeedback = (landmarks, phaseRef, repCountRef, repCooldownRe
 
     let feedback = ""
 
+    if (phaseRef.current === "up") {
+        if (Date.now() - repCooldownRef.current < 2000) {
+            feedback = ""
+        } else if (minAngle > 150) {
+            feedback = "lunge deeper"
+        } else if (minAngle <= 150 && minAngle > 110) {
+            feedback = "getting there, keep going"
+        } else if (minAngle <= 110 && minAngle >= 90) {
+            phaseRef.current = "down"
+            feedback = "perfect depth"
+        } else if (minAngle < 90) {
+            phaseRef.current = "down"
+            feedback = "too low!"
+        }
+    } else if (phaseRef.current === "down") {
+        if (minAngle < 90) {
+            feedback = "too low!"
+        } else if (minAngle >= 150) {
+            window.speechSynthesis.cancel()
+            phaseRef.current = "up"
+            repCountRef.current += 1
+            setRepCount(repCountRef.current)
+            playRepSound()
+            repCooldownRef.current = Date.now()
+            feedback = ""
+        } else {
+            feedback = ""
+        }
+    }
+
     return feedback
 }
