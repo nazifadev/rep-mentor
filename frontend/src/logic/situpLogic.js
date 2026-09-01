@@ -18,4 +18,37 @@ export const getSitUpFeedback = (landmarks, phaseRef, repCountRef, repCooldownRe
 
     const avgAngle = (leftHipAngle + rightHipAngle) / 2
 
+    let feedback = ""
+
+    if (phaseRef.current === "up") {
+        if (Date.now() - repCooldownRef.current < 2000) {
+            feedback = ""
+        } else if (avgAngle > 150) {
+            feedback = "come up more"
+        } else if (avgAngle <= 150 && avgAngle > 110) {
+            feedback = "getting there, keep going"
+        } else if (avgAngle <= 110 && avgAngle >= 80) {
+            phaseRef.current = "down"
+            feedback = "great crunch!"
+        } else if (avgAngle < 80) {
+            phaseRef.current = "down"
+            feedback = "too far up!"
+        }
+    } else if (phaseRef.current === "down") {
+        if (avgAngle < 80) {
+            feedback = "too far up!"
+        } else if (avgAngle >= 150) {
+            window.speechSynthesis.cancel()
+            phaseRef.current = "up"
+            repCountRef.current += 1
+            setRepCount(repCountRef.current)
+            playRepSound()
+            repCooldownRef.current = Date.now()
+            feedback = ""
+        } else {
+            feedback = ""
+        }
+    }
+
+    return feedback
 }
