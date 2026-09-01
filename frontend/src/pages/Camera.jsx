@@ -4,6 +4,8 @@ import { useLocation } from 'react-router-dom'
 import { useState } from "react"
 import { getSquatFeedback } from "../logic/squatLogic"
 import { getPushupFeedback } from "../logic/pushupLogic"
+import { getLungeFeedback } from "../logic/lungeLogic"
+import { getSitUpFeedback } from "../logic/situpLogic"
 
 function Camera(){
     const videoRef = useRef()
@@ -14,6 +16,7 @@ function Camera(){
     const [repCount, setRepCount] = useState(0)
     const [started, setStarted] = useState(false)
     const [bodyVisible, setBodyVisible] = useState(false)
+    const voicesRef = useRef([])
 
     const location = useLocation()
     const exercise = location.state?.exercise
@@ -37,6 +40,14 @@ function Camera(){
         oscillator.start(audioCtx.currentTime)
         oscillator.stop(audioCtx.currentTime + 0.2)
     }
+
+    useEffect(() => {
+        const loadVoices = () => {
+            voicesRef.current = window.speechSynthesis.getVoices()
+        }
+        loadVoices()
+        window.speechSynthesis.onvoiceschanged = loadVoices
+    }, [])
 
     useEffect(()=> {
         const startCamera = async () => {
@@ -72,7 +83,7 @@ function Camera(){
 
             const poseLandmarker = await PoseLandmarker.createFromOptions(vision, {
                 baseOptions: {
-                    modelAssetPath: 'https://storage.googleapis.com/mediapipe-models/pose_landmarker/pose_landmarker_lite/float16/1/pose_landmarker_lite.task',
+                    modelAssetPath: 'https://storage.googleapis.com/mediapipe-models/pose_landmarker/pose_landmarker_full/float16/1/pose_landmarker_full.task',
                     delegate: 'GPU'
                 },
                 runningMode: 'VIDEO',
@@ -98,10 +109,13 @@ function Camera(){
 
                         const landmarks = results.landmarks[0]
 
-                       const keyPoints = exercise === "push-up"
+                        const keyPoints = exercise === "push-up"
                             ? [11, 12, 13, 14, 15, 16]
+                            : exercise === "sit-up"
+                            ? [11, 12, 23, 24, 25, 26]
                             : [23, 24, 25, 26, 27, 28]
                         const allVisible = keyPoints.every(i => landmarks[i].visibility > 0.5)
+
                         if (!allVisible) {
                             setBodyVisible(false)
                             if (feedbackRef.current !== "") {
@@ -116,11 +130,15 @@ function Camera(){
 
                         let feedback = ""
 
-                       if (exercise === "squat") {
-                        feedback = getSquatFeedback(landmarks, squatPhaseRef, repCountRef, repCooldownRef, setRepCount, playRepSound)
-                    } else if (exercise === "push-up") {
-                        feedback = getPushupFeedback(landmarks, squatPhaseRef, repCountRef, repCooldownRef, setRepCount, playRepSound)
-                    }
+                        if (exercise === "squat") {
+                            feedback = getSquatFeedback(landmarks, squatPhaseRef, repCountRef, repCooldownRef, setRepCount, playRepSound)
+                        } else if (exercise === "push-up") {
+                            feedback = getPushupFeedback(landmarks, squatPhaseRef, repCountRef, repCooldownRef, setRepCount, playRepSound)
+                        } else if (exercise === "lunge") {
+                            feedback = getLungeFeedback(landmarks, squatPhaseRef, repCountRef, repCooldownRef, setRepCount, playRepSound)
+                        } else if (exercise === "sit-up") {
+                            feedback = getSitUpFeedback(landmarks, squatPhaseRef, repCountRef, repCooldownRef, setRepCount, playRepSound)
+                        }
 
                         if (feedback !== feedbackRef.current) {
                             feedbackRef.current = feedback
@@ -128,10 +146,11 @@ function Camera(){
 
                             if (feedback) {
                                 const now = Date.now()
-                                if (now - lastSpokenRef.current > 1000) {
+                                if (now - lastSpokenRef.current > 500) {
                                     window.speechSynthesis.cancel()
                                     const utterance = new SpeechSynthesisUtterance(feedback)
-                                    utterance.voice = window.speechSynthesis.getVoices().find(v => v.name === "Aaron")
+                                    const aaron = voicesRef.current.find(v => v.name === "Aaron")
+                                    if (aaron) utterance.voice = aaron
                                     utterance.rate = 0.9
                                     utterance.pitch = 1
                                     window.speechSynthesis.speak(utterance)
@@ -156,7 +175,6 @@ function Camera(){
 
 return (
     <div className="w-screen min-h-screen bg-black flex flex-col items-center justify-start py-6 px-6 md:py-10 xl:py-10 gap-3 md:gap-6 overflow-hidden">
-
         <div className="flex flex-col items-center gap-2 px-4">
             <h1 className="text-4xl md:text-6xl xl:text-5xl font-bold text-white drop-shadow-[0_0_20px_#cefcff] text-center pt-4">
                 rep-mentor
