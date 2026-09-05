@@ -2,10 +2,6 @@ import Camera from './pages/Camera'
 import ExerciseSelection from './pages/ExerciseSelection'
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
 
-
-
-
-
 function App() {
 
 
