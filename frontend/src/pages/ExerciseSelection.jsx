@@ -1,11 +1,31 @@
 import { useNavigate } from 'react-router-dom'
+import { useState, useEffect } from 'react'
+import { auth } from '../firebase'
+import { GoogleAuthProvider, signInWithPopup, signOut } from 'firebase/auth'
 
 function ExerciseSelection() {
 
   const navigate = useNavigate()
+  const [user, setUser] = useState(null)
+
+  useEffect(() => {
+    const unsubscribe = auth.onAuthStateChanged((currentUser) => {
+      setUser(currentUser)
+    })
+    return unsubscribe
+  }, [])
+
+  const handleSignIn = async () => {
+    const provider = new GoogleAuthProvider()
+    await signInWithPopup(auth, provider)
+  }
+
+  const handleSignOut = async () => {
+    await signOut(auth)
+  }
 
   const handleExerciseSelect = (exercise) => {
-    navigate('/camera', { state: { exercise } })
+    navigate('/camera', { state: { exercise, user } })
   }
 
   return (
@@ -22,9 +42,19 @@ function ExerciseSelection() {
         </svg>
         <span className="text-white font-semibold text-sm md:text-lg">rep mentor</span>
         <div className="ml-auto">
-          <button className="text-black bg-[#cefcff] hover:opacity-80 text-xs font-bold tracking-widest uppercase px-4 py-2 rounded-lg">
-            sign in
-          </button>
+          {user ? (
+            <div className="flex items-center gap-3">
+              <img src={user.photoURL} className="w-8 h-8 rounded-full" />
+              <span className="text-white text-sm hidden md:block">{user.displayName}</span>
+              <button onClick={handleSignOut} className="text-black bg-[#cefcff] hover:opacity-80 text-xs font-bold tracking-widest uppercase px-4 py-2 rounded-lg">
+                sign out
+              </button>
+            </div>
+          ) : (
+            <button onClick={handleSignIn} className="text-black bg-[#cefcff] hover:opacity-80 text-xs font-bold tracking-widest uppercase px-4 py-2 rounded-lg">
+              sign in
+            </button>
+          )}
         </div>
       </nav>
 
