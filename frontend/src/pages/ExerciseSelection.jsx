@@ -29,7 +29,7 @@ function ExerciseSelection() {
   }
 
   return (
-    <div className="min-h-screen bg-black flex flex-col md:px-15 pb-10">
+    <div className="min-h-screen bg-black flex flex-col md:px-15  pb-10">
 
       {/* navbar */}
       <nav className="w-full px-6 py-4 md:py-7 flex items-center gap-3 md:gap-3 border-b border-gray-600">
@@ -145,7 +145,7 @@ function ExerciseSelection() {
 
       </div>
 
-      <p className="md:hidden text-[#cefcff] text-xs tracking-widest text-center mt-5">
+      <p className="md:hidden text-[#cefcff] text-xs tracking-widest text-center mt-5 px-6">
     your privacy is protected. all analysis happens locally on your device. no video or images are ever stored or shared.
 </p>
     </div>
