@@ -44,11 +44,14 @@ function ExerciseSelection() {
         <div className="ml-auto">
           {user ? (
             <div className="flex items-center gap-2">
-              <img src={user.photoURL} className="w-8 h-8 rounded-full" />
-              <span className="text-white text-sm hidden md:block">{user.displayName}</span>
-              <button onClick={handleSignOut} className=" ml-5 text-black bg-[#cefcff] hover:opacity-80 text-xs font-bold tracking-widest uppercase px-4 py-2  rounded-lg">
+              <button onClick={() => navigate('/history')} className=" mr-3 text-black bg-white hover:opacity-80 text-xs font-bold tracking-widest uppercase px-4 py-2 rounded-lg">
+                history
+              </button>
+              <button onClick={handleSignOut} className="text-black bg-[#cefcff] mr-3 hover:opacity-80 text-xs font-bold tracking-widest uppercase px-4 py-2 rounded-lg">
                 sign out
               </button>
+              <img src={user.photoURL} className="w-8 h-8 rounded-full" />
+              <span className="text-white text-sm hidden md:block">{user.displayName?.split(' ')[0]}</span>
             </div>
           ) : (
             <button onClick={handleSignIn} className="text-black bg-[#cefcff] hover:opacity-80 text-xs font-bold tracking-widest uppercase px-4 py-2 rounded-lg">
@@ -60,23 +63,27 @@ function ExerciseSelection() {
 
       <div className="flex-1 flex flex-col px-4 md:px-10 pt-8 md:pt-9 md:gap-6 gap-3 px-5">
 
-        {/* hero */}
-        <div className="flex flex-col items-center md:flex-row md:items-center md:justify-center gap-4 md:gap-9 w-full">
-          <h1 className="fraunces-hero text-[#cefcff] md:pt-0 leading-none text-center md:text-left text-6xl sm:text-6xl md:text-7xl xl:text-[130px] 2xl:text-[180px]">
-            welcome,<br />let's move.
-          </h1>
-          <div className="hidden md:block w-px h-26 2xl:h-44 bg-gray-700 shrink-0" />
-          <p className="text-gray-400 text-sm md:text-base pt-1 md:pt-0 2xl:text-2xl text-center md:text-left max-w-[560px] 2xl:max-w-[450px]">
-            Choose one of four movements. We'll watch your form and coach each rep.
-            For the best experience, find a clear open space with minimal furniture in the background.
-            Make sure the area is well lit and your full body is visible to the camera. Move at a controlled, steady pace as rapid movements may affect tracking accuracy.
-          </p>
-          <div className="w-full border-b border-gray-800 md:hidden" />
-        </div>
-
-        <p className="text-gray-400 text-xs 2xl:text-sm tracking-widest uppercase pt-5 md:pt-8 text-center md:text-left">
-          choose your exercise
+     {/* hero */}
+    <div className="flex flex-col items-center md:flex-row md:items-center md:justify-center gap-4 md:gap-9 w-full">
+      <h1 className="fraunces-hero text-[#cefcff] md:pt-0 leading-none text-center md:text-left text-6xl sm:text-6xl md:text-7xl xl:text-[130px] 2xl:text-[180px]">
+        <span className="block mb-4">{user ? `hi, ${user.displayName?.split(' ')[0]}.` : 'welcome,'}</span>
+        let's move.
+      </h1>
+      <div className="hidden md:block w-px h-39 2xl:h-44 bg-gray-700 shrink-0" />
+      <div className="flex flex-col gap-3 text-center md:text-left max-w-[560px] 2xl:max-w-[450px]">
+        <p className="text-gray-400 text-sm md:text-[20px] pt-1 md:pt-0 2xl:text-2xl">
+          Your personal form coach, right here. Best results in a clear space with good lighting and your full body visible to the camera.
         </p>
+        <p className="text-[#cefcff] text-xs pt-3 tracking-widest">
+          your privacy is protected. all analysis happens locally on your device. no video or images are ever stored or shared.
+        </p>
+      </div>
+      <div className="w-full border-b border-gray-800 md:hidden" />
+    </div>
+
+    <p className="text-gray-400 text-xs 2xl:text-sm tracking-widest uppercase pt-5 md:pt-8 text-center md:text-left">
+      choose your exercise
+    </p>
 
         {/* exercise buttons */}
         <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-5 pt-2 md:pt-0 md:gap-4 w-full 2xl:pb-0">        
@@ -105,7 +112,7 @@ function ExerciseSelection() {
           </button>
 
           <button onClick={() => handleExerciseSelect('sit-up')} className="bg-white hover:bg-[#cefcff] rounded-2xl p-4 md:p-6 flex flex-col justify-end items-start min-h-[100px] sm:min-h-[160px] md:min-h-[260px] 2xl:min-h-[300px] text-left hover:-translate-y-2 transition-all duration-200">
-            <svg fill="#000000" className="w-14 h-14 md:w-16 md:h-16 mb-3" viewBox="180 50 230 140" xmlns="http://www.w3.org/2000/svg">
+            <svg fill="#000000" className="w-14 h-14 md:w-16 md:h-16 mb-1" viewBox="180 50 230 140" xmlns="http://www.w3.org/2000/svg">
               <circle cx="380" cy="65" r="20" fill="black"/>
               <line x1="375" y1="96" x2="355" y2="155" stroke="black" strokeWidth="22" strokeLinecap="round"/>
               <line x1="368" y1="115" x2="310" y2="145" stroke="black" strokeWidth="18" strokeLinecap="round"/>
@@ -119,7 +126,7 @@ function ExerciseSelection() {
           </button>
 
           <button onClick={() => handleExerciseSelect('lunge')} className="bg-white hover:bg-[#cefcff] rounded-2xl p-4 md:p-6 flex flex-col justify-end items-start min-h-[100px] sm:min-h-[160px] md:min-h-[260px] 2xl:min-h-[300px] text-left hover:-translate-y-2 transition-all duration-200">
-            <svg fill="#000000" className="w-14 h-14 md:w-16 md:h-16 mb-3" viewBox="220 10 200 220" xmlns="http://www.w3.org/2000/svg">
+            <svg fill="#000000" className="w-14 h-14 md:w-16 md:h-16 mb-1" viewBox="220 10 200 220" xmlns="http://www.w3.org/2000/svg">
               <circle cx="325" cy="45" r="20" fill="black"/>
               <line x1="325" y1="80" x2="325" y2="138" stroke="black" strokeWidth="20" strokeLinecap="round"/>
               <line x1="325" y1="102" x2="352" y2="114" stroke="black" strokeWidth="16" strokeLinecap="round"/>

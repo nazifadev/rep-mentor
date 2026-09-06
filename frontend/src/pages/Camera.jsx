@@ -262,18 +262,24 @@ function Camera(){
     }, [started])
 
 return (
-    <div className="w-screen min-h-screen bg-black flex flex-col items-center justify-start py-6 px-6 md:py-10 xl:py-10 gap-3 md:gap-6 overflow-hidden">
-        <div className="flex flex-col items-center gap-2 px-4">
-            <h1 className="text-4xl md:text-6xl xl:text-5xl font-bold text-white drop-shadow-[0_0_20px_#cefcff] text-center pt-4">
-                rep-mentor
-            </h1>
-            <p className="text-gray-400 text-xs md:text-md tracking-widest pt-0.5 uppercase text-center">
-                your real-time form coach
-            </p>
-            <p className="text-[#cefcff] font-bold text-sm md:text-[15px] tracking-widest uppercase text-center">
-                {exercise}
-            </p>
-        </div>
+    <div className="w-screen min-h-screen bg-black flex flex-col items-center justify-start py-6 px-6 md:py-10 xl:py-10 gap-3 md:gap-6 overflow-hidden md:px-15">
+            <div className="flex flex-col items-center gap-2 px-4 relative w-full">
+               <button
+                onClick={() => window.location.href = '/'}
+                className="absolute left-0 text-black bg-[#cefcff] hover:opacity-80 text-xs font-bold tracking-widest uppercase px-4 py-2 rounded-lg"
+            >
+                ← back
+            </button>
+                <h1 className="text-4xl md:text-6xl xl:text-5xl font-bold text-white drop-shadow-[0_0_20px_#cefcff] text-center pt-4">
+                    rep-mentor
+                </h1>
+                <p className="text-gray-400 text-xs md:text-md tracking-widest pt-0.5 uppercase text-center">
+                    your real-time form coach
+                </p>
+                <p className="text-[#cefcff] font-bold text-sm md:text-[15px] tracking-widest uppercase text-center">
+                    {exercise}
+                </p>
+            </div>
         <div className="relative w-full max-w-5xl xl:max-w-5xl pt-1">
             <video 
                 ref={videoRef} 
