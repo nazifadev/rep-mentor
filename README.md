@@ -12,17 +12,16 @@ Exercising with bad form goes unnoticed until it causes injury. Rep mentor uses 
 
 ## Features
 
-- Real-time body landmark detection at 60fps with joint angle calculation using Math.atan2 trigonometry
-- 30-frame rolling average smoothing to stabilize angle readings across noisy webcam input
-- Rep counting via a two-phase state machine with threshold buffering to eliminate false positives
-- Voice feedback via Web Speech API with per-feedback cooldown logic to prevent repetitive cues
-- Beep confirmation on rep completion via Web Audio API oscillator synthesis
-- Body visibility gating using per-landmark visibility scores so feedback only fires when the full body is detected
-- 15-second countdown timer with audio cues before each session begins
-- Workout results screen with rep summary, repeat session, and exercise switching options
-- Google OAuth via Firebase Auth with workout sessions persisted to Firestore per user, ordered by date
-- Guest mode with full feature access and no account required
-- Workout history page pulling sessions from Firestore ordered by most recent
+- Detects 33 body landmarks per frame using MediaPipe BlazePose and calculates joint angles with Math.atan2 trigonometry
+- Smooths angle readings with a 30-frame rolling average to reduce noise from webcam input
+- Counts reps via a two-phase state machine with threshold buffering to eliminate false positives
+- Delivers 3 types of real-time feedback per rep: voice cues via Web Speech API, on-screen text, and an audio beep via Web Audio API oscillator synthesis
+- Gates all feedback behind a per-landmark visibility check so nothing fires until the full body is in frame
+- Gives users a 15-second countdown with audio cues before each session starts
+- Shows a results screen after each workout with rep count and options to repeat or switch exercises
+- Saves workout sessions to Firestore per user via Google OAuth, ordered by date
+- Supports guest mode with full feature access and no account required
+- Includes a workout history page pulling past sessions from Firestore
 - Fully responsive across mobile and desktop
 
 ## Exercises
