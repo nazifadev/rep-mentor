@@ -23,6 +23,7 @@ Exercising with bad form goes unnoticed until it causes injury. Rep mentor uses 
 - Google OAuth via Firebase Auth with workout sessions persisted to Firestore per user, ordered by date
 - Guest mode with full feature access and no account required
 - Workout history page pulling sessions from Firestore ordered by most recent
+- Fully responsive across mobile and desktop
 
 ## Exercises
 
