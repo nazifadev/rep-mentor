@@ -8,6 +8,7 @@ import { getLungeFeedback } from "../logic/lungeLogic"
 import { getSitUpFeedback } from "../logic/situpLogic"
 import { db, auth } from '../firebase'
 import { collection, addDoc } from 'firebase/firestore'
+import WorkoutResults from './WorkoutResults'
 
 function Camera(){
     const videoRef = useRef()
@@ -18,6 +19,8 @@ function Camera(){
     const [repCount, setRepCount] = useState(0)
     const [started, setStarted] = useState(false)
     const [bodyVisible, setBodyVisible] = useState(false)
+    const [showResults, setShowResults] = useState(false)
+    const showResultsRef = useRef(false)
     const voicesRef = useRef([])
     const validRepRef = useRef(false)
     const [countdown, setCountdown] = useState(15)
@@ -62,17 +65,33 @@ function Camera(){
     }
 
     const saveWorkoutSession = async () => {
-        if (!auth.currentUser) {
-            navigate('/')
-            return
+        if (auth.currentUser) {
+            await addDoc(collection(db, "workoutSessions"), {
+                userId: auth.currentUser.uid,
+                exercise: exercise,
+                reps: repCountRef.current,
+                date: new Date()
+            })
         }
-        await addDoc(collection(db, "workoutSessions"), {
-            userId: auth.currentUser.uid,
-            exercise: exercise,
-            reps: repCountRef.current,
-            date: new Date()
-        })
-        navigate('/')
+        showResultsRef.current = true
+        window.speechSynthesis.cancel()
+        setFeedbackText("")
+        setShowResults(true)
+    }
+
+    const handleDoMore = () => {
+        repCountRef.current = 0
+        setRepCount(0)
+        squatPhaseRef.current = "up"
+        validRepRef.current = false
+        feedbackRef.current = ""
+        setFeedbackText("")
+        showResultsRef.current = false
+        setShowResults(false)
+        setStarted(false)
+        setBodyVisible(false)
+        countdownRef.current = 15
+        setCountdown(15)
     }
 
     useEffect(() => {
@@ -139,6 +158,12 @@ function Camera(){
                 numPoses: 1
             })
 
+            const stopCamera = () => {
+                if (videoRef.current && videoRef.current.srcObject) {
+                    videoRef.current.srcObject.getTracks().forEach(track => track.stop())
+                }
+            }
+
             const canvas = canvasRef.current
             const video = videoRef.current
             const ctx = canvas.getContext('2d')
@@ -180,6 +205,11 @@ function Camera(){
                         }
 
                         setBodyVisible(true)
+
+                        if (showResultsRef.current) {
+                            animationId = requestAnimationFrame(detect)
+                            return
+                        }
 
                         if (countdownRef.current > 0) {
                             animationId = requestAnimationFrame(detect)
@@ -253,6 +283,14 @@ return (
                 ref={canvasRef}
                 className="absolute top-0 left-0 w-full h-full rounded-xl"
             />
+           {showResults && (
+                <WorkoutResults
+                    exercise={exercise}
+                    repCount={repCount}
+                    onDoMore={handleDoMore}
+                    
+                />
+            )}
             <div className="absolute bottom-4 left-0 w-full flex flex-col items-center gap-2">
                 {!started ? (
                     <button
@@ -283,7 +321,7 @@ return (
                                 reps: {repCount}
                             </p>
                         )}
-                        {countdown === 0 && (
+                        {countdown === 0 && !showResults && (
                             <button
                                 onClick={saveWorkoutSession}
                                 className="bg-white hover:opacity-80 text-black text-sm font-bold tracking-widest uppercase px-8 py-2 rounded-lg"
@@ -293,22 +331,22 @@ return (
                         )}
                     </>
                 )}
-                {exercise === 'squat' && (
+                {exercise === 'squat' && !showResults && (
                     <p className="text-yellow-400 text-xs tracking-widest uppercase text-center bg-black/60 px-4 py-2 rounded-lg">
                         stand facing the camera & make sure your whole body is visible
                     </p>
                 )}
-                {exercise === 'lunge' && (
+                {exercise === 'lunge' && !showResults && (
                     <p className="text-yellow-400 text-xs tracking-widest uppercase text-center bg-black/60 px-4 py-2 rounded-lg">
                         turn sideways & make sure your whole body is visible
                     </p>
                 )}
-                {exercise === 'push-up' && (
+                {exercise === 'push-up' && !showResults && (
                     <p className="text-yellow-400 text-xs tracking-widest uppercase text-center bg-black/60 px-4 py-2 rounded-lg">
                         turn sideways & place camera at floor level so your whole body is visible
                     </p>
                 )}
-                {exercise === 'sit-up' && (
+                {exercise === 'sit-up' && !showResults && (
                     <p className="text-yellow-400 text-xs tracking-widest uppercase text-center bg-black/60 px-4 py-2 rounded-lg">
                         turn sideways & place camera at floor level so your whole body is visible
                     </p>
