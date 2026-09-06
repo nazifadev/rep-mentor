@@ -1,6 +1,6 @@
 # Rep mentor
 
-Exercising with bad form goes unnoticed until it causes injury. Rep mentor uses your webcam to detect body landmarks in real time, calculate joint angles, and deliver live form feedback and rep counts, all processed locally on your device with no footage ever leaving it.
+Exercising with bad form goes unnoticed until it causes injury. Rep-mentor uses your webcam to detect body landmarks in real time, calculate joint angles, and deliver live audio and on-screen form feedback with rep counts, all processed locally on your device with no footage ever leaving it.
 
 ## Tech Stack
 
