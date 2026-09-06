@@ -25,7 +25,7 @@ function ExerciseSelection() {
   }
 
   const handleExerciseSelect = (exercise) => {
-    navigate('/camera', { state: { exercise, user } })
+    navigate('/camera', { state: { exercise} })
   }
 
   return (
@@ -43,10 +43,10 @@ function ExerciseSelection() {
         <span className="text-white font-semibold text-sm md:text-lg">rep mentor</span>
         <div className="ml-auto">
           {user ? (
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2">
               <img src={user.photoURL} className="w-8 h-8 rounded-full" />
               <span className="text-white text-sm hidden md:block">{user.displayName}</span>
-              <button onClick={handleSignOut} className="text-black bg-[#cefcff] hover:opacity-80 text-xs font-bold tracking-widest uppercase px-4 py-2 rounded-lg">
+              <button onClick={handleSignOut} className=" ml-5 text-black bg-[#cefcff] hover:opacity-80 text-xs font-bold tracking-widest uppercase px-4 py-2  rounded-lg">
                 sign out
               </button>
             </div>

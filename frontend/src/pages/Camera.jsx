@@ -1,11 +1,13 @@
 import { useEffect } from "react"
 import { useRef } from "react"
-import { useLocation } from 'react-router-dom'
+import { useLocation, useNavigate } from 'react-router-dom'
 import { useState } from "react"
 import { getSquatFeedback } from "../logic/squatLogic"
 import { getPushupFeedback } from "../logic/pushupLogic"
 import { getLungeFeedback } from "../logic/lungeLogic"
 import { getSitUpFeedback } from "../logic/situpLogic"
+import { db, auth } from '../firebase'
+import { collection, addDoc } from 'firebase/firestore'
 
 function Camera(){
     const videoRef = useRef()
@@ -22,6 +24,7 @@ function Camera(){
     const countdownRef = useRef(15)
 
     const location = useLocation()
+    const navigate = useNavigate()
     const exercise = location.state?.exercise
 
     const [feedbackText, setFeedbackText] = useState("")
@@ -56,6 +59,20 @@ function Camera(){
         gainNode.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.1)
         oscillator.start(audioCtx.currentTime)
         oscillator.stop(audioCtx.currentTime + 0.1)
+    }
+
+    const saveWorkoutSession = async () => {
+        if (!auth.currentUser) {
+            navigate('/')
+            return
+        }
+        await addDoc(collection(db, "workoutSessions"), {
+            userId: auth.currentUser.uid,
+            exercise: exercise,
+            reps: repCountRef.current,
+            date: new Date()
+        })
+        navigate('/')
     }
 
     useEffect(() => {
@@ -266,6 +283,14 @@ return (
                                 reps: {repCount}
                             </p>
                         )}
+                        {countdown === 0 && (
+                            <button
+                                onClick={saveWorkoutSession}
+                                className="bg-white hover:opacity-80 text-black text-sm font-bold tracking-widest uppercase px-8 py-2 rounded-lg"
+                            >
+                                finish
+                            </button>
+                        )}
                     </>
                 )}
                 {exercise === 'squat' && (
@@ -285,7 +310,7 @@ return (
                 )}
                 {exercise === 'sit-up' && (
                     <p className="text-yellow-400 text-xs tracking-widest uppercase text-center bg-black/60 px-4 py-2 rounded-lg">
-                        turn sideways & place camera at floor level so your whole body is ratio visible
+                        turn sideways & place camera at floor level so your whole body is visible
                     </p>
                 )}
             </div>
