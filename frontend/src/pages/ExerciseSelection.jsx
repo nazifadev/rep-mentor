@@ -29,7 +29,7 @@ function ExerciseSelection() {
   }
 
   return (
-    <div className="min-h-screen bg-black flex flex-col md:px-15 ">
+    <div className="min-h-screen bg-black flex flex-col md:px-15 pb-10">
 
       {/* navbar */}
       <nav className="w-full px-6 py-4 md:py-7 flex items-center gap-3 md:gap-3 border-b border-gray-600">
@@ -66,7 +66,7 @@ function ExerciseSelection() {
      {/* hero */}
     <div className="flex flex-col items-center md:flex-row md:items-center md:justify-center gap-4 md:gap-9 w-full">
       <h1 className="fraunces-hero text-[#cefcff] md:pt-0 leading-none text-center md:text-left text-6xl sm:text-6xl md:text-7xl xl:text-[130px] 2xl:text-[180px]">
-        <span className="block mb-4">{user ? `hi, ${user.displayName?.split(' ')[0]}.` : 'welcome,'}</span>
+        <span className="block md:mb-4">{user ? `hi, ${user.displayName?.split(' ')[0]}.` : 'welcome,'}</span>
         let's move.
       </h1>
       <div className="hidden md:block w-px h-39 2xl:h-44 bg-gray-700 shrink-0" />
@@ -74,7 +74,7 @@ function ExerciseSelection() {
         <p className="text-gray-400 text-sm md:text-[20px] pt-1 md:pt-0 2xl:text-2xl">
           Your personal form coach, right here. Best results in a clear space with good lighting and your full body visible to the camera.
         </p>
-        <p className="text-[#cefcff] text-xs pt-3 tracking-widest">
+        <p className=" hidden md:block text-[#cefcff] text-xs xl:pt-3 tracking-widest">
           your privacy is protected. all analysis happens locally on your device. no video or images are ever stored or shared.
         </p>
       </div>
@@ -144,6 +144,10 @@ function ExerciseSelection() {
         </div>
 
       </div>
+
+      <p className="md:hidden text-[#cefcff] text-xs tracking-widest text-center mt-5">
+    your privacy is protected. all analysis happens locally on your device. no video or images are ever stored or shared.
+</p>
     </div>
   )
 }

@@ -44,7 +44,7 @@ function History() {
                 <div className="flex items-center gap-2">
                     <img src={auth.currentUser?.photoURL} className="w-8 h-8 rounded-full" />
                     <span className="text-white text-sm hidden md:block">{auth.currentUser?.displayName}</span>
-                    <button onClick={() => navigate('/')} className="ml-5 text-black bg-[#cefcff] hover:opacity-80 text-xs font-bold tracking-widest uppercase px-4 py-2 rounded-lg">
+                    <button onClick={() => navigate('/')} className="ml-3 text-black bg-[#cefcff] hover:opacity-80 text-xs font-bold tracking-widest uppercase px-4 py-2 rounded-lg">
                         back
                     </button>
                 </div>

@@ -266,11 +266,11 @@ return (
             <div className="flex flex-col items-center gap-2 px-4 relative w-full">
                <button
                 onClick={() => window.location.href = '/'}
-                className="absolute left-0 text-black bg-[#cefcff] hover:opacity-80 text-xs font-bold tracking-widest uppercase px-4 py-2 rounded-lg"
+                className="absolute left-0 text-black bg-[#cefcff] hover:opacity-80 text-xs font-bold tracking-widest uppercase px-4 py-2 rounded-lg "
             >
                 ← back
             </button>
-                <h1 className="text-4xl md:text-6xl xl:text-5xl font-bold text-white drop-shadow-[0_0_20px_#cefcff] text-center pt-4">
+                <h1 className="text-4xl md:text-6xl xl:text-5xl font-bold text-white drop-shadow-[0_0_20px_#cefcff] text-center pt-15 md:pt-4">
                     rep-mentor
                 </h1>
                 <p className="text-gray-400 text-xs md:text-md tracking-widest pt-0.5 uppercase text-center">
