@@ -13,17 +13,18 @@ Exercising with bad form goes unnoticed until it causes injury. Rep mentor uses 
 ## Features
 
 - Detects 33 body landmarks per frame using MediaPipe BlazePose and calculates joint angles with Math.atan2 trigonometry
-- Smooths angle readings with a 30-frame rolling average to reduce noise from webcam input
 - Counts reps via a two-phase state machine with threshold buffering to eliminate false positives
 - Delivers 3 types of real-time feedback per rep: voice cues via Web Speech API, on-screen text, and an audio beep via Web Audio API oscillator synthesis
 - Gates all feedback behind a per-landmark visibility check so nothing fires until the full body is in frame
 - Gives users a 15-second countdown with audio cues before each session starts
+- Prevents voice feedback from overlapping by canceling queued utterances and enforcing a 500ms cooldown between cues
 - Shows a results screen after each workout with rep count and options to repeat or switch exercises
 - Saves workout sessions to Firestore per user via Google OAuth, ordered by date
 - Supports guest mode with full feature access and no account required
 - Includes a workout history page pulling past sessions from Firestore
 - Fully responsive across mobile and desktop
 
+  
 ## Exercises
 
 | Exercise | Camera Position | Landmarks Tracked |
